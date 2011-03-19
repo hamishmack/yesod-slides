@@ -1,0 +1,62 @@
+name:              yesod-slides
+version:           0.0.0
+license:           BSD3
+license-file:      LICENSE
+author:            Hamish Mackenzie
+maintainer:        Hamish Mackenzie
+synopsis:          The greatest Yesod web application ever.
+description:       I'm sure you can say something clever here if you try.
+category:          Web
+stability:         Experimental
+cabal-version:     >= 1.6
+build-type:        Simple
+homepage:          http://yesod-slides.yesodweb.com/
+
+Flag production
+    Description:   Build the production executable.
+    Default:       False
+
+executable         yesod-slides-test
+    if flag(production)
+        Buildable: False
+    main-is:       test.hs
+    hs-source-dirs: src
+    build-depends: base         >= 4       && < 5
+                 , yesod        >= 0.7     && < 0.8
+                 , yesod-auth
+                 , yesod-static
+                 , mime-mail
+                 , wai-extra
+                 , directory
+                 , bytestring
+                 , text
+                 , persistent
+                 , persistent-sqlite
+                 , template-haskell
+                 , hamlet
+                 , web-routes
+                 , hjsmin
+                 , transformers
+                 , warp
+                 , blaze-html
+    ghc-options:   -Wall -threaded
+    other-modules: Slides
+
+executable         yesod-slides-production
+    if flag(production)
+        Buildable: True
+    else
+        Buildable: False
+    cpp-options:   -DPRODUCTION
+    main-is:       production.hs
+    hs-source-dirs: src
+    ghc-options:   -Wall -threaded
+    other-modules: Slides
+
+executable         yesod-slides-devel
+    if flag(production)
+        Buildable: False
+    main-is:       devel-server.hs
+    hs-source-dirs: src
+    ghc-options:   -Wall -O2 -threaded
+    other-modules: Slides
