@@ -1,5 +1,5 @@
-import Slides (withSlide)
+import Slides (withSlides)
 import Network.Wai.Handler.Warp (run)
 
 main :: IO ()
-main = withSlide $ run 3000
+main = withSlides $ run 3000
