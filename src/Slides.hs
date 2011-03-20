@@ -8,15 +8,20 @@ import qualified Text.Blaze.Html5 as H (h1, ul, li)
 
 data Slides = Slides
 
+-- This example uses GHC 7 syntax.  GHC 6 users should replace
+-- [parseRoutes| with [$parseRoutes|
+-- [hamlet|      with [$hamlet|
+-- [cassius|     with [$cassius|
+-- [julius|      with [$julius|
 mkYesod "Slides" [parseRoutes|
-/              RootR          GET
-/main          Main           GET
-/how           How            GET
-/hamlet        Hamlet         GET
-/hamletvsblaze HamletVsBlaze  GET
-/cassius       Cassius        GET
-/julius        Julius         GET
-|]
+    /              RootR          GET
+    /main          Main           GET
+    /how           How            GET
+    /hamlet        Hamlet         GET
+    /hamletvsblaze HamletVsBlaze  GET
+    /cassius       Cassius        GET
+    /julius        Julius         GET
+    |]
 
 instance Yesod Slides where
     approot _ = ""

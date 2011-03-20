@@ -1,3 +1,23 @@
-These are the slides I used in my presentation to the Wellington FP Users group. After each slide I showed the code for the slide and discussed how it works.
+These are the slides I used in my presentation to the Wellington FP Users group.
+After each slide I showed the code for the slide and discussed how it works.
 
 The talk covered the parts of Yesod that were of particular interest to me.
+
+This example uses GHC 7 syntax.  GHC 6 users should replace
+  [parseRoutes| with [$parseRoutes|
+  [hamlet|      with [$hamlet|
+  [cassius|     with [$cassius|
+  [julius|      with [$julius|
+
+To install this run this in development mode (so that you can mess with
+the code while it runs)
+  cabal install
+  cd src
+  ../dist/build/yesod-slides-devel/yesod-slides-devel
+
+Point your web browser at http://127.0.0.1:3000
+Click to advance from one slid to the next.
+Change the code and click refresh in the browser to see what happened.
+
+When I gave the presentation I also had the package open in Leksah in GHCi
+mode, but you can use any editor.
