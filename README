@@ -11,9 +11,11 @@ This example uses GHC 7 syntax.  GHC 6 users should replace
 
 To install this run this in development mode (so that you can mess with
 the code while it runs)
+  cabal install yesod
+  cabal install wai-handler-devel-0.2.1
   cabal install
   cd src
-  ../dist/build/yesod-slides-devel/yesod-slides-devel
+  wai-handler-devel 3000 Slides withSlides --yesod
 
 Point your web browser at http://127.0.0.1:3000
 Click to advance from one slid to the next.
