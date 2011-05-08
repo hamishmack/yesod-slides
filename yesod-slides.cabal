@@ -1,5 +1,5 @@
 name:              yesod-slides
-version:           0.0.0
+version:           0.1.0
 license:           BSD3
 license-file:      LICENSE
 author:            Hamish Mackenzie
@@ -8,7 +8,7 @@ synopsis:          The greatest Yesod web application ever.
 description:       I'm sure you can say something clever here if you try.
 category:          Web
 stability:         Experimental
-cabal-version:     >= 1.6
+cabal-version:     >= 1.8
 build-type:        Simple
 homepage:          http://yesod-slides.yesodweb.com/
 
@@ -16,47 +16,42 @@ Flag production
     Description:   Build the production executable.
     Default:       False
 
-executable         yesod-slides-test
-    if flag(production)
-        Buildable: False
-    main-is:       test.hs
-    hs-source-dirs: src
+Flag devel
+    Description:   Build for use with "yesod devel"
+    Default:       False
+
+library
     build-depends: base         >= 4       && < 5
-                 , yesod        >= 0.7     && < 0.8
-                 , yesod-auth
+                 , yesod-core   >= 0.8     && < 0.9
                  , yesod-static
-                 , mime-mail
                  , wai-extra
                  , directory
                  , bytestring
                  , text
-                 , persistent
-                 , persistent-sqlite
                  , template-haskell
                  , hamlet
-                 , web-routes
-                 , hjsmin
-                 , transformers
-                 , warp
                  , blaze-html
-    ghc-options:   -Wall -threaded
-    other-modules: Slides
+                 , web-routes
+                 , transformers
+                 , wai
+                 , blaze-builder
+                 , filepath
+    exposed-modules: Slides
+    hs-source-dirs: src
 
-executable         yesod-slides-production
+executable         yesod-slides
+    build-depends: base         >= 4       && < 5
+                 , yesod-slides == 0.1.0
+                 , warp
+                 , wai-extra
+                 , ghcjs-rts
     if flag(production)
-        Buildable: True
+        cpp-options:   -DPRODUCTION
+        ghc-options:   -Wall -threaded -O2
     else
-        Buildable: False
-    cpp-options:   -DPRODUCTION
-    main-is:       production.hs
-    hs-source-dirs: src
-    ghc-options:   -Wall -threaded
-    other-modules: Slides
+        ghc-options:   -Wall -threaded
 
-executable         yesod-slides-devel
-    if flag(production)
-        Buildable: False
-    main-is:       devel-server.hs
-    hs-source-dirs: src
-    ghc-options:   -Wall -O2 -threaded
-    other-modules: Slides
+    main-is:       yesod-slides.hs
+    hs-source-dirs: main
+
+    ghc-options:   -Wall -threaded

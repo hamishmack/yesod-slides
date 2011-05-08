@@ -1,25 +1,78 @@
-These are the slides I used in my presentation to the Wellington FP Users group.
-After each slide I showed the code for the slide and discussed how it works.
+Quick Tour to Yesod
+===================
+
+These are the slides I used in my presentation to the Wellington FP Users group.  After each slide I showed the code for the slide and discussed how it works.
 
 The talk covered the parts of Yesod that were of particular interest to me.
 
-This example uses GHC 7 syntax.  GHC 6 users should replace
-  [parseRoutes| with [$parseRoutes|
-  [hamlet|      with [$hamlet|
-  [cassius|     with [$cassius|
-  [julius|      with [$julius|
+I have now extended the slides to include an example of using GHCJS to run Haskell in the web browser.
 
-To install this run this in development mode (so that you can mess with
-the code while it runs)
-  cabal install yesod
-  cabal install wai-handler-devel-0.2.1
-  cabal install
-  cd src
-  wai-handler-devel 3000 Slides withSlides --yesod
+Building GHC with JavaScript output
+-----------------------------------
+This version of GHC makes a .js file whenever it outputs an object file.  It also "links" the javascript by copying all the files .js files into a .jsexe directory.
+It has its own version of cabal so that .js files and .jsexe directories are installed properly.
 
+<pre>
+git clone https://github.com/the-real-blackh/ghc.git
+cd ghc
+./sync-all -r https://github.com/ghc get
+./sync-all -r https://github.com/ghc get
+./sync-all -r https://github.com/ghc get
+./sync-all -r https://github.com/ghc get
+</pre>
+
+(You may need to rerun sync-all a few times if like me you get network errors part way through)
+
+<pre>
+rm -rf libraries/Cabal
+git clone https://github.com/the-real-blackh/packages-Cabal.git libraries/Cabal
+cp mk/build.mk.sample mk/build.mk
+perl boot
+./configure --prefix=/home/hamish/ghcjs
+make
+make install
+</pre>
+
+To use this compiler add /home/hamish/ghcjs to your path ahead of any other ghc.
+
+<pre>
+export PATH=/home/hamish/ghcjs/bin:$PATH
+</pre>
+
+You should be able to switch back to your main compiler at any point by simply not including this in you path.
+
+The global packages (including JavaScript) will be installed to something like
+
+ * ~/ghcjs/lib/ghc-7.1.20110508
+
+User cabal packages are installed to something like
+
+ * ~/.ghc/i386-darwin-7.1.20110508
+
+Installing GHCJS RTS
+--------------------
+The runtime system js files need by GHCJS are in a package.  To install this do
+
+<pre>
+git clone https://github.com/hamishmack/ghcjs-rts.git
+cd ghcjs-rts
+cabal install
+</pre>
+
+Installing Yesod Slides
+-----------------------
+Almost there now
+
+<pre>
+get clone https://github.com/hamishmack/yesod-slides.git
+cd yesod-slides
+cabal install --ghc-options='-XFlexibleInstances'
+yesod-slides
+</pre>
+
+You need the -XFlixibleInstances because some of the packages on which we depend do not build with this dev version of ghc without it. 
+  
 Point your web browser at http://127.0.0.1:3000
-Click to advance from one slid to the next.
-Change the code and click refresh in the browser to see what happened.
 
-When I gave the presentation I also had the package open in Leksah in GHCi
-mode, but you can use any editor.
+Click to advance from one slide to the next.  The GHCJS slde is here the last one http://127.0.0.1:3000/ghcjs
+

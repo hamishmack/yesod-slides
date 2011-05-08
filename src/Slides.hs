@@ -1,12 +1,27 @@
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings #-}
-module Slides (withSlides) where
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+module Slides (withSlides, helloString, validatePrime) where
 
-import Yesod
+import Yesod.Core
+import Yesod.Helpers.Static
+import Network.Wai (Application)
+import Text.Hamlet (hamlet, Html)
+import Text.Cassius (cassius)
+import Text.Julius (julius)
 import qualified Text.Blaze.Html5 as H (h1, ul, li)
+import Text.Blaze.Renderer.String (renderHtml)
 --import Language.Haskell.TH.Quote (QuasiQuoter(..))
 --import Language.Haskell.TH (pprint, runQ)
+import System.FilePath ((</>))
+import Control.Monad.Trans.Class (lift)
 
-data Slides = Slides
+data Slides = Slides {
+    jsexeStatic :: Static
+    }
 
 -- This example uses GHC 7 syntax.  GHC 6 users should replace
 -- [parseRoutes| with [$parseRoutes|
@@ -21,6 +36,8 @@ mkYesod "Slides" [parseRoutes|
     /hamletvsblaze HamletVsBlaze  GET
     /cassius       Cassius        GET
     /julius        Julius         GET
+    /ghcjs         GhcJs          GET
+    /jsexe         Jsexe          Static    jsexeStatic    
     |]
 
 instance Yesod Slides where
@@ -43,16 +60,20 @@ instance Yesod Slides where
                     margin-bottom: 5px
                 li li
                     font-size: 25px
+                input
+                    font-size: 30px
                 |]
         hamletToRepHtml [hamlet|
-            <html
-                <head
+            <html>
+                <head>
+                    <script type="text/javascript" src="jsexe/rts-common.js"></script>
+                    <script type="text/javascript" src="jsexe/rts-plain.js"></script>
                     <title>#{pageTitle pc}
                     ^{pageHead pc}
-                <body
+                <body #slideBody>
                     $maybe msg <- mmsg
                         <div #message>#{msg}
-                    <div style="margin:0 auto; width:600px;"
+                    <div style="margin:0 auto; width:600px;">
                         ^{pageBody pc}
             |]
 
@@ -82,14 +103,14 @@ getMain = defaultLayout $ do
     nextPage How
     [hamlet|
         <h1>Yesod Web Framwork
-        <ul
+        <ul>
             <li>Developers
-                <ul
+                <ul>
                     <li>Michael Snoyman
                     <li>Matt Brown
                     <li>Greg Weber
             <li>Goals
-                <ul
+                <ul>
                     <li>type-safe
                     <li>secure
                     <li>RESTful
@@ -102,7 +123,7 @@ getHow = defaultLayout $ do
     nextPage Hamlet
     [hamlet|
         <h1>How
-        <ul
+        <ul>
             <li>Domain Specific Languages
             <li>Quasy Quoting
             <li>Enumerators
@@ -115,7 +136,7 @@ getHamlet = defaultLayout $ do
     nextPage HamletVsBlaze
     [hamlet|
         <h1>Hamlet DSL for HTML
-        <ul
+        <ul>
             <li>Layout sensitive <b>user</b> friendly syntax
             <li>Compiled or Interpreted
             <li>Uses Blaze Builder
@@ -167,7 +188,7 @@ getHamletVsBlaze = defaultLayout $ do
 hamletPros :: Html
 hamletPros = [hamlet|
     <h1>Hamlet (DSL)
-    <ul
+    <ul>
         <li>Optimized syntax
         <li>No namespace issues
         <li>Looks like HTML
@@ -189,7 +210,7 @@ getCassius = defaultLayout $ do
     myId <- lift newIdent
     [hamlet|
         <h1>Cassius DSL for CSS
-        <ul
+        <ul>
             <li>Mainly CSS with Embedded Haskell
             <li>Use #
                 <span .someClass>Class
@@ -209,15 +230,15 @@ getCassius = defaultLayout $ do
 getJulius :: Handler RepHtml
 getJulius = defaultLayout $ do
     setTitle "Yesod Web Framework - Julius"
-    nextPage RootR
+    nextPage GhcJs
     [hamlet|
         <h1>Julius DSL for JavaScript
-        <ul
+        <ul>
             <li>Mainly JavaScript with Embedded Haskell
             <li>This is how nextPage works
         |]
 
-nextPage :: Monad m => Route master -> GGWidget sub master m ()
+nextPage :: Monad m => Route master -> GGWidget master m ()
 nextPage next = do
     addJulius [julius|
             document.onclick = function(){
@@ -225,5 +246,67 @@ nextPage next = do
             }
         |]
 
-withSlides :: (Application -> IO a) -> IO a
-withSlides f = toWaiApp Slides >>= f
+hello :: String -> Html
+hello who = [hamlet|Hello from <b>#{who}</b>|]
+
+helloString :: String -> String
+helloString = renderHtml . hello
+
+isPrime :: Integral a => a -> Bool
+isPrime p = p > 1 && (all (\n -> p `mod` n /= 0) $ takeWhile (\n -> n*n <= p) [2..])
+
+validatePrime :: Int -> String
+validatePrime p | isPrime p = renderHtml [hamlet|<b>Yes</b>, #{p} is a prime|]
+                | otherwise = renderHtml [hamlet|<b>No</b>, #{p} is not a prime|]
+
+getGhcJs :: Handler RepHtml
+getGhcJs = defaultLayout $ do
+    setTitle "Yesod Web Framework - GHC JavaScript"
+    -- Not sure how to disable onclick for all but the input box
+    -- nextPage RootR
+    helloId <- lift newIdent
+    textIn <- lift newIdent
+    message <- lift newIdent
+    [hamlet|
+        <h1>Haskell on client using GHCJS
+        Thanks to Victor Nazarov we can...
+        <ul>
+            <li>Run function on both server and client
+                <ul>
+                    <li>#{hello "Server"}
+                    <li ##{helloId}>
+            <li>
+                Use Haskell for client side validation
+                <input ##{textIn} size="8" oninput="textChanged()" onchange="textChanged()">
+                <span ##{message}>Enter a prime number
+        <div #log>
+        |]
+    addJulius [julius|
+            window.onload = function(){
+                $hs.loadPaths = ["jsexe"];
+
+                // Used packages
+                $hs.packages = [""];
+
+                // Must be called first
+                $hs.init();
+                
+                $hs.loadModule("GHC.Base");
+                $hs.loadModule("Slides");
+                
+                #{helloId}.innerHTML = $hs.fromHaskellString(
+                    $hs.modules.Slides.hs_helloString.hscall(
+                        $hs.modules.GHCziBase.hs_unpackCStringzh.hscall("Client\x00")));
+            }
+            function textChanged() {
+                #{message}.innerHTML = $hs.fromHaskellString(
+                    $hs.modules.Slides.hs_validatePrime.hscall(
+                      $hs.toHaskellInt(#{textIn}.value)));
+            }
+        |]
+
+withSlides :: FilePath -> (Application -> IO a) -> IO a
+withSlides binDir f =
+    toWaiApp Slides {
+          jsexeStatic = static $ binDir </> "yesod-slides.jsexe"
+        } >>= f
