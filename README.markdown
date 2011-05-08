@@ -48,6 +48,22 @@ The global packages (including JavaScript) will be installed to something like
 User cabal packages are installed to something like
 
  * ~/.ghc/i386-darwin-7.1.20110508
+ * ~/.cabal/lib/*/ghc-7.1.20110508
+
+Installing cabal-install with GHCJS
+-----------------------------------
+You need to make a version of cabal-install that uses the new Cabal package.  So that which you run "cabal install" it will copy .js files and .jsexe directories to the install location.
+
+<pre>
+darcs get --lazy http://darcs.haskell.org/cabal-install
+cd cabal-install
+</pre>
+
+Change build-depends in cabal-install.cabal so it has Cabal >= 1.10.1 && < 1.12
+
+<pre>
+cabal install --ghc-options='-XFlexibleInstances'
+</pre>
 
 Installing GHCJS RTS
 --------------------
@@ -64,9 +80,9 @@ Installing Yesod Slides
 Almost there now
 
 <pre>
-get clone https://github.com/hamishmack/yesod-slides.git
+git clone https://github.com/hamishmack/yesod-slides.git
 cd yesod-slides
-cabal install --ghc-options='-XFlexibleInstances'
+cabal install --constraint='tagged==0.2' --ghc-options='-XFlexibleInstances'
 yesod-slides
 </pre>
 
