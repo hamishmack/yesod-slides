@@ -66,8 +66,8 @@ instance Yesod Slides where
         hamletToRepHtml [hamlet|
             <html>
                 <head>
-                    <script type="text/javascript" src="jsexe/rts-common.js"></script>
-                    <script type="text/javascript" src="jsexe/rts-plain.js"></script>
+                    <script type="text/javascript" src="jsexe/rts-common.js">
+                    <script type="text/javascript" src="jsexe/rts-trampoline.js">
                     <title>#{pageTitle pc}
                     ^{pageHead pc}
                 <body #slideBody>
@@ -295,12 +295,12 @@ getGhcJs = defaultLayout $ do
                 $hs.loadModule("Slides");
                 
                 #{helloId}.innerHTML = $hs.fromHaskellString(
-                    $hs.modules.Slides.hs_helloString.hscall(
-                        $hs.modules.GHCziBase.hs_unpackCStringzh.hscall("Client\x00")));
+                    $hs.force( $hs.modules.Slides.hs_helloString,
+                        $hs.force( $hs.modules.GHCziBase.hs_unpackCStringzh, "Client\x00")));
             }
             function textChanged() {
                 #{message}.innerHTML = $hs.fromHaskellString(
-                    $hs.modules.Slides.hs_validatePrime.hscall(
+                    $hs.force( $hs.modules.Slides.hs_validatePrime,
                       $hs.toHaskellInt(#{textIn}.value)));
             }
         |]
