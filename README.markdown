@@ -65,6 +65,17 @@ Change build-depends in cabal-install.cabal so it has Cabal >= 1.10.1 && < 1.12
 cabal install --ghc-options='-XFlexibleInstances'
 </pre>
 
+There is a catch.  Because your old cabal install installed the dependancies the .js files for these libraries will not have been installed.  So you shoule unregister then so they will be installed again with the new cabal-install.
+
+<pre>
+ghc-pkg unregister HTTP
+ghc-pkg unregister network
+ghc-pkg unregister parsec
+ghc-pkg unregister mtl
+ghc-pkg unregister transformers
+ghc-pkg unregister zlib
+</pre>
+
 Installing GHCJS RTS
 --------------------
 The runtime system js files need by GHCJS are in a package.  To install this do
